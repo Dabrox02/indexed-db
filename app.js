@@ -1,40 +1,25 @@
 import { uid } from "./uid.js";
 
-
-let title = document.querySelector(".title");
-const estilos = {
-  color: "orange",
-  fontFamily: "Arial, Helvetica, sans-serif"
-}
-
-Object.assign(title.style, estilos);
-
-// Función para abrir la base de datos
+// Funcion que abre base de datos y retorna la conexion db
 function abrirBaseDeDatos() {
   const request = indexedDB.open('miBaseDeDatos', 1);
-
-  request.onupgradeneeded = function(event) {
+  // En caso no exista la crea.
+  request.onupgradeneeded = (event) => {
     const db = event.target.result;
-
     // Crea un almacén de objetos llamado 'objetos' con una clave primaria 'id'
     const objectStore = db.createObjectStore('objetos', { keyPath: 'id' });
-
-    // Puedes agregar índices u otras configuraciones aquí si es necesario
   };
 
   return new Promise((resolve, reject) => {
-    request.onsuccess = function(event) {
+    request.onsuccess = (event) => {
       const db = event.target.result;
       resolve(db);
     };
-
-    request.onerror = function(event) {
+    request.onerror = (event) => {
       reject(event.target.error);
     };
   });
 }
-
-
 
 // Función para agregar un objeto a IndexedDB
 async function agregarObjeto(objeto) {
@@ -48,7 +33,6 @@ async function agregarObjeto(objeto) {
     request.onsuccess = function(event) {
       resolve(event.target.result);
     };
-
     request.onerror = function(event) {
       reject(event.target.error);
     };
@@ -79,15 +63,22 @@ async function mostrarObjetosEnHTML() {
   };
 }
 
-// Ejemplo de uso
-let ud = uid();
-const objetoAgregado = { id: ud, nombre: "objeto jaider"};
-agregarObjeto(objetoAgregado)
-  .then(() => {
-    console.log('Objeto agregado con éxito.');
-    mostrarObjetosEnHTML();
-  })
-  .catch(error => {
-    console.error('Error al agregar el objeto:', error);
-  });
+// Ejemplo de uso 
+// Cada vez que recarga añade un uid
+document.addEventListener("DOMContentLoaded", (e)=>{
+  mostrarObjetosEnHTML();
+})
 
+
+document.querySelector("#agregar").addEventListener("click", (e)=>{
+  let uuid = uid();
+  const objetoAgregado = { id: uuid, nombre: `objeto ${uuid}`};
+  agregarObjeto(objetoAgregado)
+    .then(() => {
+      console.log('Objeto agregado con éxito.');
+      mostrarObjetosEnHTML();
+    })
+    .catch(error => {
+      console.error('Error al agregar el objeto:', error);
+  });
+})
